@@ -1,67 +1,86 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
 #include <string.h>
-#include <errno.h>
-
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <netdb.h>
+#include <unistd.h>
 #include <arpa/inet.h>
 
-#define PORT 4242
+#define PORT 8080
 
-#define BUFFER_SIZE 4096
+int main() {
+    int clientSocket;
+    struct sockaddr_in serverAddress;
+    char buffer[1024];
 
+    // Criar um soquete para o cliente
+    clientSocket = socket(AF_INET, SOCK_STREAM, 0);
+    if (clientSocket == -1) {
+        perror("Erro ao criar o soquete do cliente");
+        exit(EXIT_FAILURE);
+    }
 
-int main(int argc, char** argv){
+    // Configurar informações do endereço do servidor
+    serverAddress.sin_family = AF_INET;
+    serverAddress.sin_port = htons(PORT);
+    serverAddress.sin_addr.s_addr = INADDR_ANY;
 
-        struct sockaddr_in server;
+    // Conectar-se ao servidor
+    if (connect(clientSocket, (struct sockaddr *)&serverAddress, sizeof(serverAddress)) == -1) {
+        perror("Erro ao conectar-se ao servidor");
+        close(clientSocket);
+        exit(EXIT_FAILURE);
+    }
 
-        int sock_fd, slen, len = sizeof(server);
+    printf("Conectado ao servidor.\n");
 
-        char buffer[BUFFER_SIZE];
+    while (1) {
+        int escolha_cliente;
+        int numero, start;
+        int resultado;
 
-        fprintf(stdout, "Starting client ...\n");
-
-        if((sock_fd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
-                perror("Error creating client socket: ");
-                return EXIT_FAILURE;
-        }
-        fprintf(stdout, "Client socket created with fd: %d\n", sock_fd);
-
-        server.sin_family = AF_INET;
-        server.sin_port = htons(PORT);
-        server.sin_addr.s_addr = inet_addr(argv[1]);
-        memset(server.sin_zero, 0x0, 8);
-
-        if( connect(sock_fd, (struct sockaddr*) &server, len) == -1) {
-                perror("Connection to server failed");
-                return EXIT_FAILURE;
-        }
-
-        if((slen = recv(sock_fd, buffer, BUFFER_SIZE, 0)) > 0) {
-                buffer[slen + 1] = '\0';
-                fprintf(stdout, "Server: %s", buffer);
-        }
-        while(1) {
-
-                memset(buffer, 0x0, BUFFER_SIZE);
-                fprintf(stdout, "Say something: ");
-                fgets(buffer, BUFFER_SIZE, stdin);
-
-                send(sock_fd, buffer, strlen(buffer), 0);
-
-                memset(buffer, 0x0, BUFFER_SIZE);
-                slen = recv(sock_fd, buffer, BUFFER_SIZE, 0);
-                fprintf(stdout, "Server: ", buffer);
-
-                if(strcmp(buffer, "bye") == 0) break;
+        if (recv(clientSocket, &start, sizeof(start), 0) <= 0) {
+            perror("Erro ao receber número do servidor");
+            break;
         }
 
-        close(sock_fd);
-        fprintf(stdout, "\nSee you anytime\n\n");
+        // Escolher par (0) ou ímpar (1)
+        printf("Escolha par (0) ou ímpar (1): ");
+        scanf("%d", &escolha_cliente);
 
-        return EXIT_SUCCESS;
+        printf("Insira o numero desejado: ");
+        scanf("%d", &numero);
+
+        // Enviar a escolha para o servidor
+        send(clientSocket, &numero, sizeof(numero), 0);
+
+        // Receber o resultado do servidor (par ou ímpar)
+        if (recv(clientSocket, &resultado, sizeof(resultado), 0) <= 0) {
+            perror("Erro ao receber resultado do servidor");
+            break;
+        }
+
+        if (resultado == escolha_cliente) {
+            printf("Você venceu!\n");
+        } else {
+            printf("Você perdeu.\n");
+        }
+
+        // Solicitar ao cliente para continuar ou sair
+        printf("Digite 's' para sair ou qualquer outra tecla para continuar: ");
+        char escolha_continuar;
+        getchar(); // Consumir nova linha anterior
+        scanf("%c", &escolha_continuar);
+
+        // Enviar escolha ao servidor
+        send(clientSocket, &escolha_continuar, sizeof(escolha_continuar), 0);
+
+        if (escolha_continuar == 's') {
+            printf("Desconectando do servidor.\n");
+            break;
+        }
+    }
+
+    // Fechar o soquete do cliente
+    close(clientSocket);
+
+    return 0;
 }

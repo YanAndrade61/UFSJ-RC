@@ -1,102 +1,112 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
 #include <string.h>
-#include <errno.h>
+#include <unistd.h>
+#include <arpa/inet.h>
+#include <time.h>
 
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <netdb.h>
-
-#define PORT 4242
-
-#define BUFFER_SIZE 4096
+#define PORT 8080
 
 int main() {
+    int serverSocket, clientSocket1, clientSocket2;
+    struct sockaddr_in serverAddress, clientAddress1, clientAddress2;
+    char buffer[1024];
 
-    struct sockaddr_in client, server;
+    // Inicializar o gerador de números aleatórios com o tempo atual
+    srand(time(NULL));
 
-    int server_fd, client_fd;
-
-    char buffer[BUFFER_SIZE];
-
-    fprintf(stdout, "Initializing server\n");
-
-    // Creates a TCP socket (SOCK_STREAM) and IPv4 adress (AF_INET)
-    if((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
-        perror("Error creating the server socket: ");
-        return EXIT_FAILURE;
+    // Criar um soquete para o servidor
+    serverSocket = socket(AF_INET, SOCK_STREAM, 0);
+    if (serverSocket == -1) {
+        perror("Erro ao criar o soquete do servidor");
+        exit(EXIT_FAILURE);
     }
 
-    fprintf(stdout, "Server socket created with fd: %d\n", server_fd);
+    // Configurar informações do endereço do servidor
+    serverAddress.sin_family = AF_INET;
+    serverAddress.sin_port = htons(PORT);
+    serverAddress.sin_addr.s_addr = INADDR_ANY;
 
-    // Configure sockets struct
-    server.sin_family = AF_INET;
-    server.sin_port = htons(PORT);
-    memset(server.sin_zero, 0x0, 8);
-
-    // Associate the socket struct to a fd
-    int ok = 1;
-    if(setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &ok, 
-                    sizeof(int)) == -1) {
-        perror("Error with socket options");
-        return EXIT_FAILURE;
+    // Vincular o soquete ao endereço e à porta
+    if (bind(serverSocket, (struct sockaddr *)&serverAddress, sizeof(serverAddress)) == -1) {
+        perror("Erro ao vincular o soquete");
+        close(serverSocket);
+        exit(EXIT_FAILURE);
     }
 
-    // Guarantee exclusive acess to a port
-    if(bind(server_fd, (struct sockaddr*)&server,
-                sizeof(server)) == -1) {
-        perror("Error binding socket: ");
-        return EXIT_FAILURE;
-    }
-    
-    // Enter in listen mode and wait connections
-    if(listen(server_fd, 1) == -1) {
-        perror("Error listening: ");
-        return EXIT_FAILURE;
-    }
-    fprintf(stdout, "Listening on port: %d\n", PORT);
-
-    // Estabilish a new connetion and continue execution
-    socklen_t client_len = sizeof(client);
-    if((client_fd == accept(server_fd, (struct sockaddr*)&client, 
-                            &client_len)) == -1) {
-        perror("Error acepting:");
-        return EXIT_FAILURE;
+    // Aguardar conexões de dois clientes
+    if (listen(serverSocket, 2) == -1) {
+        perror("Erro ao aguardar conexões");
+        close(serverSocket);
+        exit(EXIT_FAILURE);
     }
 
-    strcpy(buffer, "Welcome, player!\n\0");
-  
-    if(send(client_fd,buffer,strlen(buffer),0)){
-        fprintf(stdout, "Client connected...\n");
+    printf("Aguardando conexões de dois clientes...\n");
 
-        // Comunicates with the client
-        do {
+    // Aceitar a primeira conexão de cliente
+    socklen_t clientAddressLen1 = sizeof(clientAddress1);
+    clientSocket1 = accept(serverSocket, (struct sockaddr *)&clientAddress1, &clientAddressLen1);
+    if (clientSocket1 == -1) {
+        perror("Erro ao aceitar a primeira conexão do cliente");
+        close(serverSocket);
+        exit(EXIT_FAILURE);
+    }
+    printf("Primeiro cliente conectado.\n");
 
-            memset(buffer, 0x0, BUFFER_SIZE);
+    // Aceitar a segunda conexão de cliente
+    socklen_t clientAddressLen2 = sizeof(clientAddress2);
+    clientSocket2 = accept(serverSocket, (struct sockaddr *)&clientAddress2, &clientAddressLen2);
+    if (clientSocket2 == -1) {
+        perror("Erro ao aceitar a segunda conexão do cliente");
+        close(serverSocket);
+        exit(EXIT_FAILURE);
+    }
+    printf("Segundo cliente conectado.\n");
 
-            // Receive client message
-            int msg_len;
-            if((msg_len = recv(client_fd, buffer, BUFFER_SIZE, 0)) > 0) {
-                buffer[msg_len - 1] = '\0';
-                printf("Client says: %s\n", buffer);
-            }
+    // Lógica do jogo de par ou ímpar
+    while (1) {
+        int num_cliente1, num_cliente2, start = 1;
 
-            if(strcmp(buffer, "bye") == 0) {
-                send(client_fd, "bye", 3, 0);
-            } else {
-                send(client_fd, "yep\n", 4, 0);
-            }
+        // Receber numero do cliente
+        send(clientSocket1, &start, sizeof(start), 0);        
+        if (recv(clientSocket1, &num_cliente1, sizeof(num_cliente1), 0) <= 0) {
+            perror("Erro ao receber escolha do cliente");
+            break;
+        }
 
-        } while (strcmp(buffer,"bye"));
-        
+        send(clientSocket2, &start, sizeof(start), 0);
+        if (recv(clientSocket2, &num_cliente2, sizeof(num_cliente2), 0) <= 0) {
+            perror("Erro ao receber escolha do cliente");
+            break;
+        }
+
+        // Determinar o resultado (par ou ímpar)
+        int resultado = (num_cliente1+num_cliente2) % 2;
+
+        // Enviar o resultado ao cliente
+        send(clientSocket1, &resultado, sizeof(resultado), 0);
+        send(clientSocket2, &resultado, sizeof(resultado), 0);
+
+        // Esperar pela escolha do cliente para continuar ou sair
+        printf("Aguardando a escolha do cliente para continuar ou 's' para sair...\n");
+        char continuar1, continuar2;
+        recv(clientSocket1, &continuar1, sizeof(continuar1), 0);
+        recv(clientSocket1, &continuar2, sizeof(continuar2), 0);
+
+        if (continuar1 == 's' && continuar1 == continuar2) {
+            // O cliente deseja continuar o jogo
+            printf("Jogo continuando...\n");
+        } else {
+            // O cliente deseja sair
+            printf("Clientes desconectado.\n");
+            break;
+        }
     }
 
-    close(client_fd);
-    close(server_fd);
+    // Fechar soquetes e encerrar o servidor
+    close(clientSocket1);
+    close(clientSocket2);
+    close(serverSocket);
 
-    fprintf(stdout, "Connection closed \n\n");
-
-    return EXIT_SUCCESS;
-} 
+    return 0;
+}
