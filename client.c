@@ -6,6 +6,8 @@
 
 #define PORT 8080
 
+#define IP_ADDR "172.18.190.87"
+
 int main() {
     int clientSocket;
     struct sockaddr_in serverAddress;
@@ -21,7 +23,7 @@ int main() {
     // Configurar informações do endereço do servidor
     serverAddress.sin_family = AF_INET;
     serverAddress.sin_port = htons(PORT);
-    serverAddress.sin_addr.s_addr = INADDR_ANY;
+    serverAddress.sin_addr.s_addr = inet_addr(IP_ADDR);
 
     // Conectar-se ao servidor
     if (connect(clientSocket, (struct sockaddr *)&serverAddress, sizeof(serverAddress)) == -1) {

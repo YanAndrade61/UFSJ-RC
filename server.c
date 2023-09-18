@@ -7,6 +7,8 @@
 
 #define PORT 8080
 
+#define IP_ADDR "172.18.190.87"
+
 int main() {
     int serverSocket, clientSocket1, clientSocket2;
     struct sockaddr_in serverAddress, clientAddress1, clientAddress2;
@@ -25,7 +27,7 @@ int main() {
     // Configurar informações do endereço do servidor
     serverAddress.sin_family = AF_INET;
     serverAddress.sin_port = htons(PORT);
-    serverAddress.sin_addr.s_addr = INADDR_ANY;
+    serverAddress.sin_addr.s_addr = inet_addr(IP_ADDR);
 
     // Vincular o soquete ao endereço e à porta
     if (bind(serverSocket, (struct sockaddr *)&serverAddress, sizeof(serverAddress)) == -1) {
@@ -94,10 +96,6 @@ int main() {
         recv(clientSocket1, &continuar2, sizeof(continuar2), 0);
 
         if (continuar1 == 's' && continuar1 == continuar2) {
-            // O cliente deseja continuar o jogo
-            printf("Jogo continuando...\n");
-        } else {
-            // O cliente deseja sair
             printf("Clientes desconectado.\n");
             break;
         }
