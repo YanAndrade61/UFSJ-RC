@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="./style.css">
+    <title>Blog sobre o Protocolo HTTP</title>
+</head>
+<body>
+
+    <header>
+        <h1>Blog sobre o Protocolo HTTP</h1>
+    </header>
+
+    <section class="main-content">
+        <article>
+            <h2>O que é o HTTP?</h2>
+            <p>O HTTP (Hypertext Transfer Protocol) é um protocolo de comunicação utilizado para transferir dados na World Wide Web. Ele permite a comunicação entre clientes (como navegadores web) e servidores.</p>
+            <p>Andrew S. Tanenbaum destaca em seu livro "Redes de Computadores" que o HTTP opera no nível de aplicação do modelo OSI e é baseado no conceito de requisição e resposta.</p>
+        </article>
+
+        <article>
+            <h2>Como Funciona o HTTP?</h2>
+            <p>O HTTP funciona com um modelo cliente-servidor, onde o cliente envia uma requisição para o servidor e o servidor responde com os dados solicitados. A comunicação é feita por meio de mensagens, que seguem um formato específico.</p>
+            <p>As mensagens HTTP consistem em um cabeçalho e um corpo. O cabeçalho contém informações sobre a requisição ou resposta, enquanto o corpo contém os dados propriamente ditos.</p>
+            <button class="toggle-details" onclick="toggleDetails('funcionamento')">Mostrar/Ocultar Detalhes</button>
+            <div id="funcionamento-details" class="details">
+                <p>Detalhes adicionais sobre o funcionamento do HTTP...</p>
+            </div>
+        </article>
+
+        <article>
+            <h2>Métodos HTTP</h2>
+            <p>O HTTP define diferentes métodos para indicar a ação desejada a ser realizada no recurso identificado. Alguns dos métodos mais comuns são GET, POST, PUT e DELETE. O método GET é utilizado para recuperar informações, enquanto o POST é usado para enviar dados ao servidor.</p>
+            <button class="toggle-details" onclick="toggleDetails('metodos')">Mostrar/Ocultar Detalhes</button>
+            <div id="metodos-details" class="details">
+                <p>Detalhes adicionais sobre os métodos HTTP...</p>
+            </div>
+        </article>
+
+        <article>
+            <h2>Cabeçalhos HTTP</h2>
+            <p>Os cabeçalhos HTTP são cruciais para a troca de informações entre o cliente e o servidor. Eles incluem informações como tipo de conteúdo, cookies, autenticação, entre outros. Esses cabeçalhos desempenham um papel essencial na formatação e interpretação adequada das mensagens HTTP.</p>
+            <button class="toggle-details" onclick="toggleDetails('cabecalhos')">Mostrar/Ocultar Detalhes</button>
+            <div id="cabecalhos-details" class="details">
+                <p>Detalhes adicionais sobre os cabeçalhos HTTP...</p>
+            </div>
+        </article>
+
+        <article>
+            <h2>Aplicações do HTTP</h2>
+            <p>O HTTP é a base para a comunicação na World Wide Web, sendo fundamental para o funcionamento de páginas da web, serviços web, APIs e diversas aplicações online. Ele possibilita o acesso rápido e eficiente a recursos distribuídos na internet.</p>
+            <button class="toggle-details" onclick="toggleDetails('aplicacoes')">Mostrar/Ocultar Detalhes</button>
+            <div id="aplicacoes-details" class="details">
+                <p>Detalhes adicionais sobre as aplicações do HTTP...</p>
+            </div>
+        </article>
+    </section>
+
+    <section class="image-section">
+        <h2>Imagens e GIFs</h2>
+        <!-- <img src="./http.png" alt="Ilustração HTTP">
+        <img src="./httpgif.gif" alt="GIF HTTP"> -->
+    </section>
+
+    <script src="./script.js"></script>
+</body>
+</html>
