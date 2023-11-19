@@ -1,64 +1,18 @@
 #include "main.h"
 
-#define PORT 8080
-char *ROOT = "arquivos";
-
-void error(char *msg)
-{
-    perror(msg);
-    exit(1);
-}
-
-int get_argument(int argc, char **argv)
-{
-    int n = 0;
-    if (argc == 2)
-        n = atoi(argv[1]);
-    return n;
-}
-
-void clients_interactive(int sockfd)
-{
-    struct sockaddr_in client;
-    socklen_t clientsz = sizeof(client);
-    while (1) {
-        int connfd = accept(sockfd, (struct sockaddr *)&(client), &clientsz);
-        if (connfd < 0)
-            error("Failed: server accept\n");
-        web_server(connfd);
-        close(connfd);
+int get_argument(int argc, char **argv, int* op) {
+    int port = 0;
+    if (argc == 3) {
+        port = atoi(argv[1]);
+        *op = atoi(argv[2]);
     }
+    return port;
 }
 
-void clients_fork(int sockfd) {
-    struct sockaddr_in client;
-    socklen_t clientsz = sizeof(client);
-    while(1) {
-        int connfd = accept(sockfd, (struct sockaddr *)&(client), &clientsz);
-        if (connfd < 0)
-            error("Failed: server accept\n");
-        
-        pid_t pid = fork();
-
-        if (pid == -1) {
-            close(connfd);
-            error("Erro ao criar processo filho");
-        }
-        else if (pid == 0) {           
-            web_server(connfd);
-            exit(EXIT_SUCCESS);
-        }
-        else {
-            close(connfd); 
-        }
-    }
-}
-
-int main(int argc, char **argv)
-{
-    int sockfd, port;
+int main(int argc, char **argv) {
+    int sockfd, port, op;
     struct sockaddr_in servaddr;
-    if (!(port = get_argument(argc, argv)))
+    if (!(port = get_argument(argc, argv,&op)))
         error("Failed: error in argument\nExecute: ./server <port>\n");
 
     int connfd;
@@ -78,7 +32,32 @@ int main(int argc, char **argv)
     if ((listen(sockfd, 10)) != 0)
         error("Failed: socket listen\n");
 
-    clients_fork(sockfd);
+    switch (op){
+        case 1:
+            clients_interactive(sockfd);
+            break;
+        case 2:
+            clients_fork(sockfd);
+            break;
+        case 3:
+            clients_select(sockfd);
+            break;
+        case 4:
+            struct shared_data datash;
+            datash.head = datash.tail = -1;
+            pthread_mutex_init(&(datash.mutex), NULL);
+
+            pthread_t threads[MAXTHREAD];
+            for (int i = 0; i < MAXTHREAD; i++) {
+                if (pthread_create(&threads[i], NULL, thread_function, (void*)&datash) != 0) {
+                    close(sockfd);
+                    error("Failed: thread creation");
+                }
+            }
+            client_thread(sockfd, &datash);
+        default:
+            break;
+    }
 
     close(sockfd);
 }

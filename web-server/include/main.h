@@ -9,16 +9,21 @@
 #include <time.h>
 
 #include <arpa/inet.h>
+#include <netinet/in.h>
 
+#include <sys/select.h>
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 
 #include "web.h"
+#include "threadtask.h"
 #include "file.h"
+#include "client.h"
 
 #define RESOURCES_PATH "./resources"
-#define MAXBUFF 1024
+#define MAXBUFF 1048576
 #define MAXCLIENT 10
+#define MAXTHREAD 5
 
 #endif

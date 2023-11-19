@@ -1,6 +1,6 @@
 #include "main.h"
 
-void web_server(int connfd) {
+int web_server(int connfd) {
 
     char buff[MAXBUFF], fpath[MAXBUFF];
     char response[MAXBUFF], fsize[MAXBUFF];
@@ -12,7 +12,7 @@ void web_server(int connfd) {
     bzero(mimet, MAXBUFF);
     bzero(fsize, MAXBUFF);
 
-    if(read(connfd, buff, sizeof(buff)) <= 0) return;
+    if(read(connfd, buff, sizeof(buff)) <= 0) return 1;
 
     //Get path requested
     file_path(buff,fpath);
@@ -40,4 +40,6 @@ void web_server(int connfd) {
     write(connfd, f->data, f->size);
 
     printf("Client %d\n%s\n", connfd, response);
+
+    return 0;
 }

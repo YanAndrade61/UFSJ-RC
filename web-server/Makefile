@@ -7,7 +7,7 @@ SRC_DIR = src
 OBJ_DIR = obj
 
 # Lista de fontes para o servidor e cliente
-SERVER_SOURCES = $(SRC_DIR)/server.c $(SRC_DIR)/web.c $(SRC_DIR)/file.c
+SERVER_SOURCES = $(SRC_DIR)/server.c $(SRC_DIR)/web.c $(SRC_DIR)/file.c $(SRC_DIR)/client.c $(SRC_DIR)/threadtask.c
 
 # Objetos correspondentes
 SERVER_OBJECTS = $(patsubst $(SRC_DIR)/%.c, $(OBJ_DIR)/server_%.o, $(SERVER_SOURCES))
