@@ -97,6 +97,6 @@ void client_thread(int sockfd, struct shared_data *datash) {
             error("Failed: server accept\n");
         printf("conn: %d\n",connfd);
         // Adiciona a tarefa à fila
-        push_task(datash, connfd);
+        push_task(datash, connfd);printf("conn: %d\n",connfd);
     }
 }

@@ -4,10 +4,12 @@
 #include <pthread.h>
 
 #define MAXTHREAD 5
+#define MAXTASK 1024
 
 struct shared_data {
-    int tasks[MAXTHREAD];
+    int tasks[MAXTASK];
     int head, tail;
+
     pthread_mutex_t mutex;
 };
 

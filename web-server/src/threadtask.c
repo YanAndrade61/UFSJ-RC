@@ -3,7 +3,7 @@
 void push_task(struct shared_data *datash, int connfd) {
     pthread_mutex_lock(&(datash->mutex));
 
-    if (datash->tail == MAXTHREAD - 1) {
+    if (datash->tail == MAXTASK - 1) {
         printf("Fila de tarefas cheia. Descartando conexão.\n");
         close(connfd);
     } else {
@@ -41,8 +41,9 @@ void* thread_function(void* arg) {
     struct shared_data *datash = (struct shared_data *)arg;
     while (1) {
         int task = pop_task(datash);
-        if (task != -1){
+        if (task != -1) {
             web_server(task);
+            close(task);
         }
     }
 }

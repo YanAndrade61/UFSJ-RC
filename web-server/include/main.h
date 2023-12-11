@@ -24,6 +24,5 @@
 #define RESOURCES_PATH "./resources"
 #define MAXBUFF 1048576
 #define MAXCLIENT 10
-#define MAXTHREAD 5
 
 #endif

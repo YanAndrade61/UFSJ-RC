@@ -62,7 +62,7 @@ void file_path(char* buff, char* fpath)
     strcat(fpath, RESOURCES_PATH);
     if(strcmp(token,"/") == 0) 
         strcat(fpath,"/index.html");
-    else
+    else 
         strcat(fpath,token);
 }
 
